@@ -7,7 +7,10 @@ import { fileURLToPath } from 'url';
 // Load environment variables
 dotenv.config();
 
+console.log('🏹 Starting D2 Archery server...');
+
 // Import routes
+console.log('📦 Loading routes...');
 import authRoutes from './routes/auth.js';
 import scoresRoutes from './routes/scores.js';
 import coachesRoutes from './routes/coaches.js';
@@ -19,6 +22,7 @@ import archeryRoutes from './routes/archery.js';
 import memosRoutes from './routes/memos.js';
 import teamsRoutes from './routes/teams.js';
 import adminRoutes from './routes/admin.js';
+console.log('✅ Routes loaded');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -130,7 +134,10 @@ async function runStartupMigrations() {
 
 // Start server
 app.listen(PORT, async () => {
-  console.log(`🏹 D2 Archery running on http://localhost:${PORT}`);
+  console.log(`🏹 D2 Archery running on port ${PORT}`);
+  console.log(`📁 __dirname: ${__dirname}`);
+  console.log(`📁 Frontend dist path: ${path.join(__dirname, '../../frontend/dist')}`);
+  console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
   await runStartupMigrations();
 });
 

@@ -112,7 +112,8 @@ export function LoginPage() {
   };
 
   const hasGoogleClientId = !!import.meta.env.VITE_GOOGLE_CLIENT_ID;
-  const isProduction = !import.meta.env.DEV;
+  // Check if running in production: either PROD mode or not on localhost
+  const isProduction = import.meta.env.PROD || !window.location.hostname.includes('localhost');
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-white px-4">
