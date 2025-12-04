@@ -437,15 +437,42 @@ async function runStartupMigrations() {
         console.log('✅ Created practice_memos table');
       }
 
-      // Set admin user (by email)
+      // Set admin users (by email) and create if not exist
       const { users } = await import('./db/index.js');
-      try {
-        await db.update(users)
-          .set({ isAdmin: 1 })
-          .where(eq(users.email, 'takeshi@katomotor.co.jp'));
-        console.log('✅ Admin user configured');
-      } catch (e) {
-        // Ignore if user doesn't exist
+      const bcrypt = await import('bcryptjs');
+
+      // Admin accounts with passwords
+      const adminAccounts = [
+        { email: 'takeshi@katomotor.co.jp', name: 'Takeshi', password: 'admin123' },
+        { email: 'admin1@d2archery.com', name: 'Admin 1', password: 'admin123' },
+        { email: 'admin2@d2archery.com', name: 'Admin 2', password: 'admin123' },
+        { email: 'admin3@d2archery.com', name: 'Admin 3', password: 'admin123' },
+      ];
+
+      for (const admin of adminAccounts) {
+        try {
+          // Check if user exists
+          const existingUser = await db.execute(sql`SELECT id FROM users WHERE email = ${admin.email}`);
+          const existingRows = existingUser[0] as unknown as Array<{ id: number }>;
+
+          if (existingRows.length === 0) {
+            // Create admin user with hashed password
+            const hashedPassword = await bcrypt.hash(admin.password, 10);
+            await db.execute(sql`
+              INSERT INTO users (email, name, password, is_admin, auth_provider, language, created_at, updated_at)
+              VALUES (${admin.email}, ${admin.name}, ${hashedPassword}, 1, 'email', 'ja', NOW(), NOW())
+            `);
+            console.log(`✅ Created admin user: ${admin.email}`);
+          } else {
+            // Update existing user to be admin
+            await db.update(users)
+              .set({ isAdmin: 1 })
+              .where(eq(users.email, admin.email));
+            console.log(`✅ Updated admin status: ${admin.email}`);
+          }
+        } catch (e) {
+          console.error(`Failed to configure admin ${admin.email}:`, e);
+        }
       }
 
       console.log('✅ Startup migrations completed');
