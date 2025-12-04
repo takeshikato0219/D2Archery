@@ -113,6 +113,15 @@ async function runStartupMigrations() {
 
       console.log('🔄 Running startup migrations...');
 
+      // Check if users table has the email column (if it exists but is broken, drop it)
+      if (await tableExists(db, 'users')) {
+        const hasEmail = await columnExists(db, 'users', 'email');
+        if (!hasEmail) {
+          console.log('⚠️ Users table exists but is missing email column. Dropping and recreating...');
+          await db.execute(sql`DROP TABLE IF EXISTS users`);
+        }
+      }
+
       // Create users table if it doesn't exist
       if (!await tableExists(db, 'users')) {
         console.log('📦 Creating users table...');
