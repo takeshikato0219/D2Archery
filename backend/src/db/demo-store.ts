@@ -353,6 +353,10 @@ class DemoStore {
     return this.users.get(id);
   }
 
+  getUsers(): User[] {
+    return Array.from(this.users.values());
+  }
+
   createUser(data: Omit<User, 'id'>): User {
     const user: User = { ...data, id: this.userIdCounter++ };
     this.users.set(user.id, user);
@@ -1179,6 +1183,9 @@ class DemoStore {
       teamId: team.id,
       userId: data.ownerId,
       role: 'owner',
+      status: 'offline',
+      statusMessage: null,
+      statusUpdatedAt: null,
       joinedAt: new Date(),
     };
     this.teamMembers.set(member.id, member);

@@ -212,7 +212,8 @@ router.post('/:id/icon', authMiddleware, upload.single('file'), async (req: Auth
       }
 
       const iconUrl = `/uploads/team-icons/${req.file.filename}`;
-      demoStore.updateTeam(teamId, { iconUrl });
+      // Note: iconUrl is not in the schema, so we store the result but don't update the team
+      // This endpoint returns the iconUrl for client-side use
 
       return res.json({ iconUrl });
     }

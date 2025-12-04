@@ -468,6 +468,7 @@ router.post('/send', authMiddleware, async (req: AuthRequest, res) => {
       demoStore.createMessage({
         userId: req.user!.id,
         coachId: parseInt(coachId),
+        sessionId: null,
         role: 'user',
         content: message,
         createdAt: new Date(),
@@ -498,6 +499,7 @@ router.post('/send', authMiddleware, async (req: AuthRequest, res) => {
       savedMessage = demoStore.createMessage({
         userId: req.user!.id,
         coachId: parseInt(coachId),
+        sessionId: null,
         role: 'assistant',
         content: aiResponse,
         createdAt: new Date(),
@@ -593,6 +595,7 @@ router.post('/advice', authMiddleware, async (req: AuthRequest, res) => {
       demoStore.createMessage({
         userId: req.user!.id,
         coachId: parseInt(coachId),
+        sessionId: null,
         role: 'user',
         content: userMsg,
         createdAt: new Date(),
@@ -600,6 +603,7 @@ router.post('/advice', authMiddleware, async (req: AuthRequest, res) => {
       demoStore.createMessage({
         userId: req.user!.id,
         coachId: parseInt(coachId),
+        sessionId: null,
         role: 'assistant',
         content: advice,
         createdAt: new Date(),
