@@ -19,9 +19,12 @@ export function Layout() {
     return location.pathname.startsWith(path);
   };
 
+  // Check if we're on a chat page (needs full height, no padding)
+  const isChatPage = location.pathname.startsWith('/coaches/');
+
   return (
     <div className="min-h-screen flex flex-col">
-      <main className="flex-1 pb-20 safe-area-top">
+      <main className={`flex-1 safe-area-top ${isChatPage ? '' : 'pb-20'}`}>
         <Outlet />
       </main>
 

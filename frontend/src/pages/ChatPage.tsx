@@ -227,7 +227,7 @@ export function ChatPage() {
   const coachAvatarUrl = coach.avatarUrl;
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-[calc(100vh-4rem)] bg-gray-50">
       {/* Sidebar Overlay for Mobile */}
       {sidebarOpen && (
         <div
@@ -238,9 +238,9 @@ export function ChatPage() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:relative inset-y-0 left-0 z-50 w-72 bg-gray-900 text-white flex flex-col transform transition-transform duration-300 ease-in-out ${
+        className={`fixed lg:relative top-0 bottom-16 left-0 z-50 w-72 bg-gray-900 text-white flex flex-col transform transition-transform duration-300 ease-in-out ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}
+        } lg:h-full`}
       >
         {/* Sidebar Header */}
         <div className="p-4 border-b border-gray-700 flex items-center justify-between safe-area-top">
