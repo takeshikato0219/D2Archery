@@ -204,7 +204,7 @@ export function ChatPage() {
   const coachAvatarUrl = getAssetUrl(coach.avatarUrl);
 
   return (
-    <div className="flex h-[calc(100dvh-4rem)] bg-gray-50">
+    <div className="flex h-[calc(100dvh-7rem)] bg-gray-50">
       {/* Sidebar Overlay for Mobile */}
       {sidebarOpen && (
         <div
