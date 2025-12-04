@@ -109,9 +109,9 @@ async function runStartupMigrations() {
         }
       }
 
-      // auth_provider column to track login method
+      // auth_provider column to track login method (ENUM type to match schema)
       try {
-        await db.execute(sql`ALTER TABLE users ADD COLUMN auth_provider VARCHAR(20) NOT NULL DEFAULT 'google'`);
+        await db.execute(sql`ALTER TABLE users ADD COLUMN auth_provider ENUM('google', 'email') NOT NULL DEFAULT 'google'`);
         console.log('✅ Added auth_provider column');
       } catch (e: unknown) {
         const err = e as { code?: string };

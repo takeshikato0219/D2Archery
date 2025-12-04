@@ -277,6 +277,11 @@ router.post('/register', async (req, res) => {
     });
   } catch (error) {
     console.error('Register error:', error);
+    // Log more details for debugging
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
     res.status(500).json({ error: '登録に失敗しました' });
   }
 });
