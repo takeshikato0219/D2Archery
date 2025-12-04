@@ -32,7 +32,8 @@ lerna-debug.log*
 
 # Local data
 *.local
-data/
+
+# Note: backend/data/ and backend/uploads/ are intentionally tracked for Railway deployment
 
 # Claude Code
 .claude/
