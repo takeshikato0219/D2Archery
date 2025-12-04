@@ -2,7 +2,8 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "cd frontend && rm -rf node_modules package-lock.json && npm install && npm run build && cd ../backend && rm -rf node_modules package-lock.json && npm install && npm run build"
+    "installCommand": "npm install --legacy-peer-deps",
+    "buildCommand": "cd frontend && npm run build && cd ../backend && npm run build"
   },
   "deploy": {
     "startCommand": "cd backend && npm run start",
