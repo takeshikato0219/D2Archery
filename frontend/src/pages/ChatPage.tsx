@@ -227,7 +227,7 @@ export function ChatPage() {
   const coachAvatarUrl = coach.avatarUrl;
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-8rem)] bg-gray-50">
+    <div className="flex h-[calc(100dvh-4rem)] bg-gray-50">
       {/* Sidebar Overlay for Mobile */}
       {sidebarOpen && (
         <div
@@ -238,9 +238,9 @@ export function ChatPage() {
 
       {/* Sidebar - hidden on mobile, shown on lg+ */}
       <aside
-        className={`fixed lg:static top-0 bottom-0 left-0 z-50 w-72 bg-gray-900 text-white flex flex-col transform transition-transform duration-300 ease-in-out ${
+        className={`fixed lg:relative top-0 bottom-16 left-0 z-50 w-72 bg-gray-900 text-white flex flex-col transform transition-transform duration-300 ease-in-out ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        } lg:h-full lg:flex-shrink-0`}
+        } lg:bottom-0`}
       >
         {/* Sidebar Header */}
         <div className="p-4 border-b border-gray-700 flex items-center justify-between safe-area-top">
@@ -336,7 +336,7 @@ export function ChatPage() {
       </aside>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-0">
+      <div className="flex-1 flex flex-col min-w-0 pb-16 lg:pb-0">
         {/* Header */}
         <header className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center">
           <button
