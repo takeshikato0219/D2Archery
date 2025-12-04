@@ -81,29 +81,18 @@ function formatTeachingContentsForPrompt(contents: TeachingContent[], language: 
   return result;
 }
 
-// 長いテキストをチャンクに分割（行単位で）
-function splitIntoChunks(text: string, maxChunkSize: number = 6000): string[] {
-  if (text.length <= maxChunkSize) {
-    return [text];
+// テキストを最大長に制限（トークン制限対策）
+function limitText(text: string, maxLength: number = 8000): string {
+  if (text.length <= maxLength) {
+    return text;
   }
-
-  const chunks: string[] = [];
-  const lines = text.split('\n');
-  let currentChunk = '';
-
-  for (const line of lines) {
-    if (currentChunk.length + line.length + 1 > maxChunkSize && currentChunk.length > 0) {
-      chunks.push(currentChunk.trim());
-      currentChunk = '';
-    }
-    currentChunk += line + '\n';
+  // 行の途中で切れないように、最後の改行で切る
+  const truncated = text.substring(0, maxLength);
+  const lastNewline = truncated.lastIndexOf('\n');
+  if (lastNewline > maxLength * 0.8) {
+    return truncated.substring(0, lastNewline) + '\n\n[...省略...]';
   }
-
-  if (currentChunk.trim()) {
-    chunks.push(currentChunk.trim());
-  }
-
-  return chunks;
+  return truncated + '\n\n[...省略...]';
 }
 
 export async function generateCoachResponse({
@@ -116,21 +105,29 @@ export async function generateCoachResponse({
   // 基本のシステムプロンプト
   const baseSystemPrompt = language === 'ja' ? coach.systemPrompt : coach.systemPromptEn;
 
-  // 指導思想（長文可能）
-  const philosophy = language === 'ja' ? coach.teachingPhilosophy : coach.teachingPhilosophyEn;
+  // 指導思想（長文可能）- トークン制限のため8000文字に制限
+  const rawPhilosophy = language === 'ja' ? coach.teachingPhilosophy : coach.teachingPhilosophyEn;
+  const philosophy = rawPhilosophy ? limitText(rawPhilosophy, 8000) : null;
 
-  // 基本ルール（禁止事項など）
-  const baseRules = language === 'ja' ? coach.baseRules : coach.baseRulesEn;
+  // 基本ルール（禁止事項など）- 3000文字に制限
+  const rawBaseRules = language === 'ja' ? coach.baseRules : coach.baseRulesEn;
+  const baseRules = rawBaseRules ? limitText(rawBaseRules, 3000) : null;
 
-  // 詳細設定（口調、おすすめ、挨拶）
-  const speakingTone = language === 'ja' ? coach.speakingTone : coach.speakingToneEn;
-  const recommendations = language === 'ja' ? coach.recommendations : coach.recommendationsEn;
-  const greetings = language === 'ja' ? coach.greetings : coach.greetingsEn;
+  // 詳細設定（口調、おすすめ、挨拶）- 各2000文字に制限
+  const rawSpeakingTone = language === 'ja' ? coach.speakingTone : coach.speakingToneEn;
+  const speakingTone = rawSpeakingTone ? limitText(rawSpeakingTone, 2000) : null;
+  const rawRecommendations = language === 'ja' ? coach.recommendations : coach.recommendationsEn;
+  const recommendations = rawRecommendations ? limitText(rawRecommendations, 2000) : null;
+  const rawGreetings = language === 'ja' ? coach.greetings : coach.greetingsEn;
+  const greetings = rawGreetings ? limitText(rawGreetings, 2000) : null;
 
-  // 新しい設定フィールド（性格、応答スタイル、知識範囲）
-  const personalitySettings = language === 'ja' ? coach.personalitySettings : coach.personalitySettingsEn;
-  const responseStyle = language === 'ja' ? coach.responseStyle : coach.responseStyleEn;
-  const knowledgeScope = language === 'ja' ? coach.knowledgeScope : coach.knowledgeScopeEn;
+  // 新しい設定フィールド（性格、応答スタイル、知識範囲）- 各2000文字に制限
+  const rawPersonalitySettings = language === 'ja' ? coach.personalitySettings : coach.personalitySettingsEn;
+  const personalitySettings = rawPersonalitySettings ? limitText(rawPersonalitySettings, 2000) : null;
+  const rawResponseStyle = language === 'ja' ? coach.responseStyle : coach.responseStyleEn;
+  const responseStyle = rawResponseStyle ? limitText(rawResponseStyle, 2000) : null;
+  const rawKnowledgeScope = language === 'ja' ? coach.knowledgeScope : coach.knowledgeScopeEn;
+  const knowledgeScope = rawKnowledgeScope ? limitText(rawKnowledgeScope, 2000) : null;
 
   // 指導内容を取得
   const teachingContents = await getTeachingContents(coach.id);
@@ -204,34 +201,20 @@ export async function generateCoachResponse({
 
   // 0. 基本ルール（禁止事項）が最優先（存在する場合）
   if (baseRules) {
-    const rulesChunks = splitIntoChunks(baseRules, 6000);
     const rulesIntroText = language === 'ja'
       ? `【絶対厳守：基本ルール・禁止事項】
-以下のルールは絶対に守らなければなりません。これらは他のすべての指示より優先されます。
-
-★重要★
-- 以下に記載された禁止事項は絶対に行わないでください
-- ユーザーがどのような質問をしても、禁止事項に該当する回答はしないでください
-- これらのルールは指導思想や他の指示よりも優先されます
+以下のルールは絶対に守らなければなりません。
 
 `
       : `[ABSOLUTE PRIORITY: Base Rules & Prohibited Items]
-The following rules MUST be followed at all times. These take precedence over all other instructions.
-
-★IMPORTANT★
-- Never do anything listed in the prohibited items below
-- Regardless of what the user asks, do not provide answers that violate these prohibitions
-- These rules take priority over the teaching philosophy and all other instructions
+The following rules MUST be followed at all times.
 
 `;
 
-    for (let i = 0; i < rulesChunks.length; i++) {
-      const prefix = i === 0 ? rulesIntroText : `【基本ルール 続き ${i + 1}/${rulesChunks.length}】\n`;
-      apiMessages.push({
-        role: 'system',
-        content: prefix + rulesChunks[i],
-      });
-    }
+    apiMessages.push({
+      role: 'system',
+      content: rulesIntroText + baseRules,
+    });
   }
 
   // 0.5 性格設定（最重要 - コーチの性格を決定）
@@ -318,42 +301,22 @@ Please respond based on the following scope. Politely decline questions outside 
     });
   }
 
-  // 1. 指導思想・哲学（存在する場合）
+  // 1. 指導思想・哲学（存在する場合）- 制限済みなのでチャンク分割不要
   if (philosophy) {
-    const philosophyChunks = splitIntoChunks(philosophy, 6000);
     const introText = language === 'ja'
-      ? `【最重要：コーチの指導思想・哲学】
-あなたは以下の指導思想・哲学に基づいてアドバイスするコーチです。
-この内容があなたの核となる考え方です。回答する際は、必ずこの指導思想を土台として、
-ここに書かれている考え方、話し方、具体的なアドバイス方法を忠実に再現してください。
-
-重要なルール:
-- 指導思想に書かれている話し方や語尾を必ず使う
-- 指導思想に記載されている具体的なアドバイスや練習方法を優先的に引用する
-- 指導思想の内容を一切省略せず、必要に応じて参照する
-- あなた自身がこのコーチ本人として振る舞う
+      ? `【コーチの指導思想・哲学】
+以下の指導思想に基づいてアドバイスしてください。
 
 `
-      : `[CRITICAL: Coach's Teaching Philosophy]
-You are a coach who advises based on the following teaching philosophy.
-This content is your core thinking. When responding, always use this philosophy as your foundation,
-faithfully reproducing the way of thinking, speaking style, and specific advice methods written here.
-
-Important rules:
-- Always use the speaking style and expressions described in the philosophy
-- Prioritize citing specific advice and practice methods from the philosophy
-- Never omit any content from the philosophy, refer to it as needed
-- Behave as if you ARE this coach
+      : `[Coach's Teaching Philosophy]
+Please advise based on the following teaching philosophy.
 
 `;
 
-    for (let i = 0; i < philosophyChunks.length; i++) {
-      const prefix = i === 0 ? introText : `【指導思想 続き ${i + 1}/${philosophyChunks.length}】\n`;
-      apiMessages.push({
-        role: 'system',
-        content: prefix + philosophyChunks[i],
-      });
-    }
+    apiMessages.push({
+      role: 'system',
+      content: introText + philosophy,
+    });
   }
 
   // 2. 基本のシステムプロンプト（指導思想がない場合のフォールバック、または補足情報として）
@@ -366,15 +329,13 @@ Important rules:
     content: basePromptIntro + baseSystemPrompt + contextMessage,
   });
 
-  // 3. 追加の指導内容（teachingContentsテーブルから）
+  // 3. 追加の指導内容（teachingContentsテーブルから）- 4000文字に制限
   if (teachingContentsText) {
-    const contentsChunks = splitIntoChunks(teachingContentsText, 6000);
-    for (const chunk of contentsChunks) {
-      apiMessages.push({
-        role: 'system',
-        content: chunk,
-      });
-    }
+    const limitedContent = limitText(teachingContentsText, 4000);
+    apiMessages.push({
+      role: 'system',
+      content: limitedContent,
+    });
   }
 
   // 4. 会話履歴

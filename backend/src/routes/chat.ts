@@ -351,7 +351,15 @@ router.post('/sessions/:sessionId/send', authMiddleware, async (req: AuthRequest
     });
   } catch (error) {
     console.error('Send session message error:', error);
-    res.status(500).json({ error: 'Failed to send message' });
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    res.status(500).json({
+      error: 'Failed to send message',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 
