@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Send, Sparkles, Trash2, Plus, Menu, X, MessageSquare, Pencil, Check } from 'lucide-react';
+import { ArrowLeft, Send, Trash2, Plus, Menu, X, MessageSquare, Pencil, Check } from 'lucide-react';
 import { api } from '../lib/api';
 import type { Coach, ChatMessage, ChatSession } from '../types';
 
@@ -189,29 +189,6 @@ export function ChatPage() {
     } finally {
       setEditingSessionId(null);
       setEditingTitle('');
-    }
-  };
-
-  const handleGetAdvice = async () => {
-    if (sending || !coachId) return;
-
-    // Create a new session for advice if needed
-    let session = currentSession;
-    if (!session) {
-      session = await api.createChatSession(parseInt(coachId));
-      setSessions(prev => [session!, ...prev]);
-      setCurrentSession(session);
-    }
-
-    setSending(true);
-    try {
-      await api.getAdvice(parseInt(coachId));
-      const updatedMessages = await api.getSessionMessages(session.id);
-      setMessages(updatedMessages);
-    } catch (error) {
-      console.error('Get advice error:', error);
-    } finally {
-      setSending(false);
     }
   };
 
