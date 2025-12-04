@@ -31,12 +31,18 @@ async function getTeachingContents(coachId: number): Promise<TeachingContent[]> 
   if (isDemoMode) {
     return demoStore.getTeachingContentsByCoachId(coachId);
   } else {
-    const { db, teachingContents } = await import('../db/index.js');
-    const { eq, desc } = await import('drizzle-orm');
-    return await db.query.teachingContents.findMany({
-      where: eq(teachingContents.coachId, coachId),
-      orderBy: [desc(teachingContents.priority)],
-    });
+    try {
+      const { db, teachingContents } = await import('../db/index.js');
+      const { eq, desc } = await import('drizzle-orm');
+      return await db.query.teachingContents.findMany({
+        where: eq(teachingContents.coachId, coachId),
+        orderBy: [desc(teachingContents.priority)],
+      });
+    } catch (error) {
+      // テーブルが存在しない場合は空配列を返す
+      console.warn('Teaching contents table not found, skipping:', error);
+      return [];
+    }
   }
 }
 
