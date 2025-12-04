@@ -8,6 +8,28 @@ const router = Router();
 
 const SESSION_SECRET = process.env.SESSION_SECRET || 'demo-secret-key-change-in-production';
 
+// Get demo users list (for demo login selection)
+router.get('/demo-users', async (_req, res) => {
+  try {
+    if (!isDemoMode) {
+      return res.status(403).json({ error: 'Demo users are only available in demo mode' });
+    }
+
+    const users = demoStore.getUsers();
+    res.json(users.map(user => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      avatarUrl: user.avatarUrl,
+      affiliation: user.affiliation,
+      nickname: user.nickname,
+    })));
+  } catch (error) {
+    console.error('Get demo users error:', error);
+    res.status(500).json({ error: 'Failed to get demo users' });
+  }
+});
+
 // Demo login (for development/testing only)
 router.post('/demo-login', async (req, res) => {
   try {
@@ -15,9 +37,19 @@ router.post('/demo-login', async (req, res) => {
       return res.status(403).json({ error: 'Demo login is only available in demo mode' });
     }
 
-    // Get first demo user
+    const { userId } = req.body;
+
+    // Get user by ID or default to first user
     const users = demoStore.getUsers();
-    const user = users[0];
+    let user;
+
+    if (userId) {
+      user = users.find(u => u.id === userId);
+    }
+
+    if (!user) {
+      user = users[0];
+    }
 
     if (!user) {
       return res.status(500).json({ error: 'No demo users available' });

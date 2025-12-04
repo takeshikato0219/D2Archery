@@ -189,6 +189,31 @@ class DemoStore {
 
   constructor() {
     this.loadFromFile();
+    this.initDefaultUsers();
+  }
+
+  // Initialize default demo users if none exist
+  private initDefaultUsers(): void {
+    if (this.users.size === 0) {
+      const now = new Date();
+      const demoUsers: Omit<User, 'id'>[] = [
+        { email: 'test1@example.com', name: 'テストユーザー1', avatarUrl: null, googleId: null, language: 'ja', gender: 'male', affiliation: '東京大学', nickname: 'アーチャー1号', bestScores: null, mastersRating: 1200, mastersRank: 10, createdAt: now, updatedAt: now },
+        { email: 'test2@example.com', name: 'テストユーザー2', avatarUrl: null, googleId: null, language: 'ja', gender: 'female', affiliation: '京都大学', nickname: 'アロー姫', bestScores: null, mastersRating: 1350, mastersRank: 8, createdAt: now, updatedAt: now },
+        { email: 'test3@example.com', name: 'テストユーザー3', avatarUrl: null, googleId: null, language: 'ja', gender: 'male', affiliation: '大阪大学', nickname: 'ゴールドハンター', bestScores: null, mastersRating: 1500, mastersRank: 5, createdAt: now, updatedAt: now },
+        { email: 'test4@example.com', name: 'Test User 4', avatarUrl: null, googleId: null, language: 'en', gender: 'female', affiliation: 'Stanford University', nickname: 'Bullseye', bestScores: null, mastersRating: 1450, mastersRank: 6, createdAt: now, updatedAt: now },
+        { email: 'test5@example.com', name: 'テストユーザー5', avatarUrl: null, googleId: null, language: 'ja', gender: 'other', affiliation: '早稲田大学', nickname: 'シューター', bestScores: null, mastersRating: 1100, mastersRank: 12, createdAt: now, updatedAt: now },
+        { email: 'test6@example.com', name: 'Test User 6', avatarUrl: null, googleId: null, language: 'en', gender: 'male', affiliation: 'MIT', nickname: 'Arrow King', bestScores: null, mastersRating: 1600, mastersRank: 3, createdAt: now, updatedAt: now },
+        { email: 'test7@example.com', name: 'テストユーザー7', avatarUrl: null, googleId: null, language: 'ja', gender: 'female', affiliation: '慶應大学', nickname: 'ターゲットクイーン', bestScores: null, mastersRating: 1250, mastersRank: 9, createdAt: now, updatedAt: now },
+        { email: 'test8@example.com', name: 'テストユーザー8', avatarUrl: null, googleId: null, language: 'ja', gender: 'male', affiliation: '名古屋大学', nickname: 'ストレートショット', bestScores: null, mastersRating: 1400, mastersRank: 7, createdAt: now, updatedAt: now },
+        { email: 'test9@example.com', name: 'Test User 9', avatarUrl: null, googleId: null, language: 'en', gender: 'female', affiliation: 'Harvard University', nickname: 'Precision', bestScores: null, mastersRating: 1550, mastersRank: 4, createdAt: now, updatedAt: now },
+        { email: 'test10@example.com', name: 'テストユーザー10', avatarUrl: null, googleId: null, language: 'ja', gender: 'male', affiliation: '九州大学', nickname: 'ファイナルアロー', bestScores: null, mastersRating: 1050, mastersRank: 15, createdAt: now, updatedAt: now },
+      ];
+
+      for (const userData of demoUsers) {
+        this.createUser(userData);
+      }
+      console.log('🏹 Created 10 demo users');
+    }
   }
 
   // Load data from JSON file
