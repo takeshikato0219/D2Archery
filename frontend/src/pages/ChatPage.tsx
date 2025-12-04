@@ -227,7 +227,7 @@ export function ChatPage() {
   const coachAvatarUrl = coach.avatarUrl;
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] bg-gray-50">
+    <div className="flex flex-col h-[calc(100dvh-8rem)] bg-gray-50">
       {/* Sidebar Overlay for Mobile */}
       {sidebarOpen && (
         <div
@@ -236,11 +236,11 @@ export function ChatPage() {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - hidden on mobile, shown on lg+ */}
       <aside
-        className={`fixed lg:relative top-0 bottom-16 left-0 z-50 w-72 bg-gray-900 text-white flex flex-col transform transition-transform duration-300 ease-in-out ${
+        className={`fixed lg:static top-0 bottom-0 left-0 z-50 w-72 bg-gray-900 text-white flex flex-col transform transition-transform duration-300 ease-in-out ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        } lg:h-full`}
+        } lg:h-full lg:flex-shrink-0`}
       >
         {/* Sidebar Header */}
         <div className="p-4 border-b border-gray-700 flex items-center justify-between safe-area-top">
@@ -336,9 +336,9 @@ export function ChatPage() {
       </aside>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center safe-area-top">
+        <header className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center">
           <button
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden mr-3 p-2 -ml-2 hover:bg-gray-100 rounded-lg"
@@ -367,8 +367,8 @@ export function ChatPage() {
           </div>
         </header>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        {/* Messages - scrollable area */}
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0">
           {!currentSession && messages.length === 0 ? (
             <div className="text-center py-12">
               {coachAvatarUrl ? (
@@ -471,7 +471,7 @@ export function ChatPage() {
 
         {/* Advice Button */}
         {currentSession && messages.length > 0 && (
-          <div className="px-4 pb-2">
+          <div className="flex-shrink-0 px-4 pb-2">
             <button
               onClick={handleGetAdvice}
               disabled={sending}
@@ -483,9 +483,9 @@ export function ChatPage() {
           </div>
         )}
 
-        {/* Input */}
-        <div className="bg-white border-t border-gray-200 px-4 py-3 safe-area-bottom">
-          <div className="flex items-center space-x-2">
+        {/* Input - fixed at bottom */}
+        <div className="flex-shrink-0 bg-white border-t border-gray-200 px-4 py-3">
+          <div className="flex items-center gap-2 max-w-3xl mx-auto">
             <input
               type="text"
               value={input}
@@ -498,7 +498,7 @@ export function ChatPage() {
             <button
               onClick={handleSend}
               disabled={!input.trim() || sending}
-              className="btn-primary p-2"
+              className="btn-primary p-2 flex-shrink-0"
             >
               <Send className="w-5 h-5" />
             </button>
