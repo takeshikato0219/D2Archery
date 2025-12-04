@@ -78,6 +78,18 @@ app.use((err: Error, req: express.Request, res: express.Response, _next: express
   res.status(500).json({ error: 'Internal server error' });
 });
 
+// Helper function to check if table exists
+async function tableExists(db: any, tableName: string): Promise<boolean> {
+  const { sql } = await import('drizzle-orm');
+  const result = await db.execute(sql`
+    SELECT COUNT(*) as count
+    FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = ${tableName}
+  `);
+  return result[0]?.[0]?.count > 0;
+}
+
 // Helper function to check if column exists
 async function columnExists(db: any, tableName: string, columnName: string): Promise<boolean> {
   const { sql } = await import('drizzle-orm');
@@ -101,34 +113,102 @@ async function runStartupMigrations() {
 
       console.log('🔄 Running startup migrations...');
 
-      // Add password column for email authentication
-      if (!await columnExists(db, 'users', 'password')) {
-        await db.execute(sql`ALTER TABLE users ADD COLUMN password VARCHAR(255)`);
-        console.log('✅ Added password column');
+      // Create users table if it doesn't exist
+      if (!await tableExists(db, 'users')) {
+        console.log('📦 Creating users table...');
+        await db.execute(sql`
+          CREATE TABLE users (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            email VARCHAR(255) NOT NULL UNIQUE,
+            name VARCHAR(255) NOT NULL,
+            avatar_url VARCHAR(500),
+            google_id VARCHAR(255) UNIQUE,
+            password VARCHAR(255),
+            is_admin INT NOT NULL DEFAULT 0,
+            auth_provider ENUM('google', 'email') NOT NULL DEFAULT 'google',
+            language ENUM('ja', 'en') NOT NULL DEFAULT 'ja',
+            gender ENUM('male', 'female', 'other'),
+            affiliation VARCHAR(255),
+            nickname VARCHAR(100),
+            best_scores TEXT,
+            masters_rating INT DEFAULT 0,
+            masters_rank INT,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX email_idx (email),
+            INDEX google_id_idx (google_id)
+          )
+        `);
+        console.log('✅ Created users table');
       } else {
-        console.log('ℹ️ password column already exists');
+        console.log('ℹ️ users table already exists');
+
+        // Add password column for email authentication
+        if (!await columnExists(db, 'users', 'password')) {
+          await db.execute(sql`ALTER TABLE users ADD COLUMN password VARCHAR(255)`);
+          console.log('✅ Added password column');
+        }
+
+        // Add is_admin column for admin functionality
+        if (!await columnExists(db, 'users', 'is_admin')) {
+          await db.execute(sql`ALTER TABLE users ADD COLUMN is_admin INT NOT NULL DEFAULT 0`);
+          console.log('✅ Added is_admin column');
+        }
+
+        // Add auth_provider column to track login method
+        if (!await columnExists(db, 'users', 'auth_provider')) {
+          await db.execute(sql`ALTER TABLE users ADD COLUMN auth_provider ENUM('google', 'email') NOT NULL DEFAULT 'google'`);
+          console.log('✅ Added auth_provider column');
+        }
       }
 
-      // Add is_admin column for admin functionality
-      if (!await columnExists(db, 'users', 'is_admin')) {
-        await db.execute(sql`ALTER TABLE users ADD COLUMN is_admin INT NOT NULL DEFAULT 0`);
-        console.log('✅ Added is_admin column');
-      } else {
-        console.log('ℹ️ is_admin column already exists');
-      }
-
-      // Add auth_provider column to track login method
-      if (!await columnExists(db, 'users', 'auth_provider')) {
-        await db.execute(sql`ALTER TABLE users ADD COLUMN auth_provider ENUM('google', 'email') NOT NULL DEFAULT 'google'`);
-        console.log('✅ Added auth_provider column');
-      } else {
-        console.log('ℹ️ auth_provider column already exists');
+      // Create coaches table if it doesn't exist
+      if (!await tableExists(db, 'coaches')) {
+        console.log('📦 Creating coaches table...');
+        await db.execute(sql`
+          CREATE TABLE coaches (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            name VARCHAR(255) NOT NULL,
+            name_en VARCHAR(255) NOT NULL,
+            personality TEXT NOT NULL,
+            personality_en TEXT NOT NULL,
+            system_prompt TEXT NOT NULL,
+            system_prompt_en TEXT NOT NULL,
+            teaching_philosophy TEXT,
+            teaching_philosophy_en TEXT,
+            base_rules TEXT,
+            base_rules_en TEXT,
+            speaking_tone TEXT,
+            speaking_tone_en TEXT,
+            recommendations TEXT,
+            recommendations_en TEXT,
+            greetings TEXT,
+            greetings_en TEXT,
+            personality_settings TEXT,
+            personality_settings_en TEXT,
+            response_style TEXT,
+            response_style_en TEXT,
+            knowledge_scope TEXT,
+            knowledge_scope_en TEXT,
+            specialty VARCHAR(255) NOT NULL,
+            specialty_en VARCHAR(255) NOT NULL,
+            avatar_url VARCHAR(500),
+            color VARCHAR(7) DEFAULT '#3B82F6',
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+          )
+        `);
+        console.log('✅ Created coaches table');
       }
 
       // Update coach name from キム・チョンテ to Kim Chung Tae
-      await db.update(coaches)
-        .set({ name: 'Kim Chung Tae' })
-        .where(eq(coaches.name, 'キム・チョンテ'));
+      try {
+        await db.update(coaches)
+          .set({ name: 'Kim Chung Tae' })
+          .where(eq(coaches.name, 'キム・チョンテ'));
+      } catch (e) {
+        // Ignore error if coaches table is empty
+      }
 
       console.log('✅ Startup migrations completed');
     }
