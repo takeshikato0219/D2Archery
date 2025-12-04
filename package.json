@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "description": "D2 Archery - AI Coaching App for Archers",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "workspaces": [
     "frontend",
     "backend"
