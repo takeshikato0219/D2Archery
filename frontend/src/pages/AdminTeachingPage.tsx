@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Edit2, Trash2, ChevronDown, ChevronUp, Save, X, Sparkles, Check, FileText, BookOpen, ShieldAlert, Settings, User, Brain, MessageSquare, Target, Upload, Image } from 'lucide-react';
-import { api } from '../lib/api';
+import { api, getAssetUrl } from '../lib/api';
 import type { TeachingContent, TeachingCategory } from '../types';
 
 interface FormData {
@@ -611,9 +611,9 @@ export function AdminTeachingPage() {
                 <div className="flex items-center gap-4">
                   {/* Avatar preview */}
                   <div className="relative">
-                    {coachAvatarUrl ? (
+                    {getAssetUrl(coachAvatarUrl) ? (
                       <img
-                        src={coachAvatarUrl}
+                        src={getAssetUrl(coachAvatarUrl)!}
                         alt="Coach avatar"
                         className="w-20 h-20 rounded-full object-cover border-2 border-gray-300"
                       />

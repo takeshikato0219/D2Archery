@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Send, Trash2, Plus, Menu, X, MessageSquare, Pencil, Check } from 'lucide-react';
-import { api } from '../lib/api';
+import { api, getAssetUrl } from '../lib/api';
 import type { Coach, ChatMessage, ChatSession } from '../types';
 
 export function ChatPage() {
@@ -201,7 +201,7 @@ export function ChatPage() {
   }
 
   const coachName = i18n.language === 'ja' ? coach.name : coach.nameEn;
-  const coachAvatarUrl = coach.avatarUrl;
+  const coachAvatarUrl = getAssetUrl(coach.avatarUrl);
 
   return (
     <div className="flex h-[calc(100dvh-4rem)] bg-gray-50">

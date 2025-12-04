@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { MessageCircle } from 'lucide-react';
-import { api } from '../lib/api';
+import { api, getAssetUrl } from '../lib/api';
 import type { Coach } from '../types';
 
 export function CoachesPage() {
@@ -40,12 +40,20 @@ export function CoachesPage() {
             to={`/coaches/${coach.id}`}
             className="card p-4 flex items-start hover:shadow-soft transition-shadow block"
           >
-            <div
-              className="w-14 h-14 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xl font-bold mr-4"
-              style={{ backgroundColor: coach.color }}
-            >
-              {(i18n.language === 'ja' ? coach.name : coach.nameEn).charAt(0)}
-            </div>
+            {getAssetUrl(coach.avatarUrl) ? (
+              <img
+                src={getAssetUrl(coach.avatarUrl)!}
+                alt={i18n.language === 'ja' ? coach.name : coach.nameEn}
+                className="w-14 h-14 rounded-full flex-shrink-0 object-cover mr-4"
+              />
+            ) : (
+              <div
+                className="w-14 h-14 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xl font-bold mr-4"
+                style={{ backgroundColor: coach.color }}
+              >
+                {(i18n.language === 'ja' ? coach.name : coach.nameEn).charAt(0)}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-gray-900">
                 {i18n.language === 'ja' ? coach.name : coach.nameEn}

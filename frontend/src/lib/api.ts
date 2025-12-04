@@ -1,4 +1,15 @@
-const API_BASE = import.meta.env.VITE_API_URL || '';
+export const API_BASE = import.meta.env.VITE_API_URL || '';
+
+// Helper function to get full URL for uploaded assets (avatars, images, etc.)
+export function getAssetUrl(path: string | null | undefined): string | null {
+  if (!path) return null;
+  // If path is already a full URL, return as is
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  // Otherwise, prepend API_BASE
+  return `${API_BASE}${path}`;
+}
 
 class ApiClient {
   private token: string | null = null;

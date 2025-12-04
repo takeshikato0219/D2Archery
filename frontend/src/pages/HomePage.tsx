@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { TrendingUp, TrendingDown, Minus, Target, Award, ArrowRight, Trophy, Calendar, Crown, Medal, Flame, MessageCircle, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { api } from '../lib/api';
+import { api, getAssetUrl } from '../lib/api';
 import type { ScoreStats, ScoreLog, ArcherRating, DailyRankingEntry, RankingEntry, Coach } from '../types';
 
 export function HomePage() {
@@ -415,9 +415,9 @@ export function HomePage() {
                   to={`/coaches/${coach.id}`}
                   className="card p-4 flex items-start hover:shadow-soft transition-shadow block"
                 >
-                  {coach.avatarUrl ? (
+                  {getAssetUrl(coach.avatarUrl) ? (
                     <img
-                      src={coach.avatarUrl}
+                      src={getAssetUrl(coach.avatarUrl)!}
                       alt={coachName}
                       className="w-14 h-14 rounded-full flex-shrink-0 object-cover mr-4"
                     />
