@@ -72,9 +72,30 @@ app.use((err: Error, req: express.Request, res: express.Response, _next: express
   res.status(500).json({ error: 'Internal server error' });
 });
 
+// Run startup migrations
+async function runStartupMigrations() {
+  try {
+    // Only run in production mode
+    if (process.env.NODE_ENV === 'production' || process.env.DB_HOST) {
+      const { db, coaches } = await import('./db/index.js');
+      const { eq } = await import('drizzle-orm');
+
+      // Update coach name from キム・チョンテ to Kim Chung Tae
+      await db.update(coaches)
+        .set({ name: 'Kim Chung Tae' })
+        .where(eq(coaches.name, 'キム・チョンテ'));
+
+      console.log('✅ Startup migrations completed');
+    }
+  } catch (error) {
+    console.error('⚠️ Startup migration error (non-fatal):', error);
+  }
+}
+
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🏹 D2 Archery running on http://localhost:${PORT}`);
+  await runStartupMigrations();
 });
 
 export default app;

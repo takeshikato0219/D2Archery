@@ -31,7 +31,7 @@ async function seed() {
 
     // Insert default coach (Kim Chung Tae)
     await db.insert(schema.coaches).values({
-      name: 'キム・チョンテ',
+      name: 'Kim Chung Tae',
       nameEn: 'Kim Chung Tae',
       personality: '韓国アーチェリー界のレジェンド。オリンピック金メダリストを多数輩出した名コーチ。厳しくも愛情深い指導スタイルで、選手の潜在能力を最大限に引き出す。基礎の徹底と精神力の強化を重視し、「一射入魂」の精神を大切にする。',
       personalityEn: 'A legendary Korean archery coach who has produced numerous Olympic gold medalists. Known for his strict yet compassionate coaching style that maximizes athletes\' potential. Emphasizes thorough fundamentals and mental strength, valuing the spirit of "one arrow, one soul."',
