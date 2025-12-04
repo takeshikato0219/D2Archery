@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import type { AuthRequest } from '../middleware/auth.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { demoStore, isDemoMode } from '../db/demo-store.js';
