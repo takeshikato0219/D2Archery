@@ -281,8 +281,13 @@ router.post('/register', async (req, res) => {
     if (error instanceof Error) {
       console.error('Error message:', error.message);
       console.error('Error stack:', error.stack);
+      // Return more specific error in development
+      if (process.env.NODE_ENV !== 'production') {
+        res.status(500).json({ error: `登録に失敗しました: ${error.message}` });
+        return;
+      }
     }
-    res.status(500).json({ error: '登録に失敗しました' });
+    res.status(500).json({ error: '登録に失敗しました。しばらく経ってからお試しください。' });
   }
 });
 

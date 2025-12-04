@@ -78,6 +78,19 @@ app.use((err: Error, req: express.Request, res: express.Response, _next: express
   res.status(500).json({ error: 'Internal server error' });
 });
 
+// Helper function to check if column exists
+async function columnExists(db: any, tableName: string, columnName: string): Promise<boolean> {
+  const { sql } = await import('drizzle-orm');
+  const result = await db.execute(sql`
+    SELECT COUNT(*) as count
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = ${tableName}
+    AND COLUMN_NAME = ${columnName}
+  `);
+  return result[0]?.[0]?.count > 0;
+}
+
 // Run startup migrations
 async function runStartupMigrations() {
   try {
@@ -86,38 +99,30 @@ async function runStartupMigrations() {
       const { db, coaches } = await import('./db/index.js');
       const { eq, sql } = await import('drizzle-orm');
 
-      // Add new auth columns if they don't exist
-      // password column for email authentication
-      try {
+      console.log('🔄 Running startup migrations...');
+
+      // Add password column for email authentication
+      if (!await columnExists(db, 'users', 'password')) {
         await db.execute(sql`ALTER TABLE users ADD COLUMN password VARCHAR(255)`);
         console.log('✅ Added password column');
-      } catch (e: unknown) {
-        const err = e as { code?: string };
-        if (err.code !== 'ER_DUP_FIELDNAME') {
-          console.log('ℹ️ password column already exists or error:', err.code);
-        }
+      } else {
+        console.log('ℹ️ password column already exists');
       }
 
-      // is_admin column for admin functionality
-      try {
+      // Add is_admin column for admin functionality
+      if (!await columnExists(db, 'users', 'is_admin')) {
         await db.execute(sql`ALTER TABLE users ADD COLUMN is_admin INT NOT NULL DEFAULT 0`);
         console.log('✅ Added is_admin column');
-      } catch (e: unknown) {
-        const err = e as { code?: string };
-        if (err.code !== 'ER_DUP_FIELDNAME') {
-          console.log('ℹ️ is_admin column already exists or error:', err.code);
-        }
+      } else {
+        console.log('ℹ️ is_admin column already exists');
       }
 
-      // auth_provider column to track login method (ENUM type to match schema)
-      try {
+      // Add auth_provider column to track login method
+      if (!await columnExists(db, 'users', 'auth_provider')) {
         await db.execute(sql`ALTER TABLE users ADD COLUMN auth_provider ENUM('google', 'email') NOT NULL DEFAULT 'google'`);
         console.log('✅ Added auth_provider column');
-      } catch (e: unknown) {
-        const err = e as { code?: string };
-        if (err.code !== 'ER_DUP_FIELDNAME') {
-          console.log('ℹ️ auth_provider column already exists or error:', err.code);
-        }
+      } else {
+        console.log('ℹ️ auth_provider column already exists');
       }
 
       // Update coach name from キム・チョンテ to Kim Chung Tae
