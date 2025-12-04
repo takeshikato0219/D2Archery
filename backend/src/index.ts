@@ -219,6 +219,17 @@ async function runStartupMigrations() {
         // Ignore error if coaches table is empty
       }
 
+      // Set admin user (by email)
+      const { users } = await import('./db/index.js');
+      try {
+        await db.update(users)
+          .set({ isAdmin: 1 })
+          .where(eq(users.email, 'takeshi@katomotor.co.jp'));
+        console.log('✅ Admin user configured');
+      } catch (e) {
+        // Ignore if user doesn't exist
+      }
+
       console.log('✅ Startup migrations completed');
     }
   } catch (error) {
