@@ -369,42 +369,28 @@ export function ChatPage() {
 
         {/* Messages - scrollable area */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0">
-          {!currentSession && messages.length === 0 ? (
-            <div className="text-center py-12">
+          {(!currentSession && messages.length === 0) || (messages.length === 0 && currentSession) ? (
+            <div className="flex flex-col items-center justify-center h-full">
               {coachAvatarUrl ? (
                 <img
                   src={coachAvatarUrl}
                   alt={coachName}
-                  className="w-20 h-20 rounded-full object-cover mx-auto mb-4"
+                  className="w-16 h-16 rounded-full object-cover mb-4"
                 />
               ) : (
                 <div
-                  className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-3xl font-bold"
+                  className="w-16 h-16 rounded-full mb-4 flex items-center justify-center text-white text-2xl font-bold"
                   style={{ backgroundColor: coach.color }}
                 >
                   {coachName.charAt(0)}
                 </div>
               )}
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {t('coaches.chatWith', { name: coachName })}
-              </h3>
-              <p className="text-gray-500 text-sm mb-4">{t('chat.noMessages')}</p>
-              <button
-                onClick={handleGetAdvice}
-                disabled={sending}
-                className="btn-secondary inline-flex items-center"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                {t('chat.getAdvice')}
-              </button>
-            </div>
-          ) : messages.length === 0 && currentSession ? (
-            <div className="text-center py-12">
-              <MessageSquare className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {t('chat.startConversation') || '会話を始めましょう'}
-              </h3>
-              <p className="text-gray-500 text-sm">{t('chat.typeMessage') || 'メッセージを入力してください'}</p>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                {coachName}
+              </h2>
+              <p className="text-gray-500 text-sm text-center max-w-md">
+                {i18n.language === 'ja' ? coach.specialty : coach.specialtyEn}
+              </p>
             </div>
           ) : (
             <>
@@ -469,39 +455,79 @@ export function ChatPage() {
           )}
         </div>
 
-        {/* Advice Button */}
-        {currentSession && messages.length > 0 && (
-          <div className="flex-shrink-0 px-4 pb-2">
-            <button
-              onClick={handleGetAdvice}
-              disabled={sending}
-              className="w-full btn-secondary text-sm py-2 flex items-center justify-center"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {t('chat.getAdvice')}
-            </button>
+        {/* Suggestion Buttons - only show when no messages */}
+        {messages.length === 0 && (
+          <div className="flex-shrink-0 px-4 pb-4">
+            <div className="max-w-2xl mx-auto">
+              <div className="flex flex-wrap gap-2 justify-center">
+                {[
+                  { text: 'フォームの改善点', icon: '🎯' },
+                  { text: 'スコアを伸ばすコツ', icon: '📈' },
+                  { text: 'メンタル強化法', icon: '💪' },
+                  { text: '練習メニュー提案', icon: '📋' },
+                ].map((suggestion, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setInput(suggestion.text);
+                      setTimeout(() => {
+                        if (!currentSession) {
+                          handleNewChat(suggestion.text);
+                        } else {
+                          handleSendWithSession(currentSession.id, suggestion.text);
+                        }
+                      }, 100);
+                    }}
+                    disabled={sending}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors shadow-sm"
+                  >
+                    <span>{suggestion.icon}</span>
+                    <span>{suggestion.text}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Input - fixed at bottom */}
-        <div className="flex-shrink-0 bg-white border-t border-gray-200 px-4 py-3">
-          <div className="flex items-center gap-2 max-w-3xl mx-auto">
-            <input
-              type="text"
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyPress={e => e.key === 'Enter' && handleSend()}
-              placeholder={t('chat.placeholder')}
-              className="input flex-1"
-              disabled={sending}
-            />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || sending}
-              className="btn-primary p-2 flex-shrink-0"
-            >
-              <Send className="w-5 h-5" />
-            </button>
+        {/* Input - ChatGPT style */}
+        <div className="flex-shrink-0 bg-gradient-to-t from-white via-white to-transparent px-4 py-4">
+          <div className="max-w-2xl mx-auto">
+            <div className="relative flex items-end bg-white border border-gray-300 rounded-2xl shadow-sm focus-within:border-gray-400 focus-within:shadow-md transition-all">
+              <textarea
+                value={input}
+                onChange={e => {
+                  setInput(e.target.value);
+                  // Auto-resize
+                  e.target.style.height = 'auto';
+                  e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
+                }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                placeholder={t('chat.placeholder') || '質問してみましょう'}
+                className="flex-1 resize-none bg-transparent px-4 py-3 pr-12 text-base outline-none max-h-[200px] min-h-[48px]"
+                disabled={sending}
+                rows={1}
+              />
+              <button
+                onClick={handleSend}
+                disabled={!input.trim() || sending}
+                className={`absolute right-2 bottom-2 p-2 rounded-full transition-colors ${
+                  input.trim() && !sending
+                    ? 'bg-gray-900 text-white hover:bg-gray-700'
+                    : 'bg-gray-200 text-gray-400'
+                }`}
+              >
+                <Send className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 text-center mt-2">
+              AIコーチはアーチェリーのアドバイスを提供します
+            </p>
           </div>
         </div>
       </div>
