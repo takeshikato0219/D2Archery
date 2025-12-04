@@ -113,12 +113,19 @@ async function runStartupMigrations() {
 
       console.log('🔄 Running startup migrations...');
 
-      // Check if users table has the email column (if it exists but is broken, drop it)
+      // NOTE: NEVER drop existing tables - this causes data loss!
+      // If users table has issues, we'll try to add missing columns instead
       if (await tableExists(db, 'users')) {
+        console.log('ℹ️ users table exists');
         const hasEmail = await columnExists(db, 'users', 'email');
         if (!hasEmail) {
-          console.log('⚠️ Users table exists but is missing email column. Dropping and recreating...');
-          await db.execute(sql`DROP TABLE IF EXISTS users`);
+          console.log('⚠️ Users table is missing email column. Adding it...');
+          try {
+            await db.execute(sql`ALTER TABLE users ADD COLUMN email VARCHAR(255) NOT NULL DEFAULT ''`);
+            console.log('✅ Added email column to users table');
+          } catch (e) {
+            console.error('Failed to add email column:', e);
+          }
         }
       }
 
@@ -171,6 +178,9 @@ async function runStartupMigrations() {
         }
       }
 
+      // Default coach avatar URL (external URL that won't disappear on server restart)
+      const DEFAULT_COACH_AVATAR = 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Kim_Chung-tae_%28archer%29.jpg/220px-Kim_Chung-tae_%28archer%29.jpg';
+
       // Create coaches table if it doesn't exist
       if (!await tableExists(db, 'coaches')) {
         console.log('📦 Creating coaches table...');
@@ -209,10 +219,10 @@ async function runStartupMigrations() {
         `);
         console.log('✅ Created coaches table');
 
-        // Seed default coach
+        // Seed default coach with avatar
         console.log('📦 Seeding default coach...');
         await db.execute(sql`
-          INSERT INTO coaches (name, name_en, personality, personality_en, system_prompt, system_prompt_en, specialty, specialty_en, color)
+          INSERT INTO coaches (name, name_en, personality, personality_en, system_prompt, system_prompt_en, specialty, specialty_en, color, avatar_url)
           VALUES (
             'Kim Chung Tae',
             'Kim Chung Tae',
@@ -222,7 +232,8 @@ async function runStartupMigrations() {
             'You are an archery AI coach. Provide specific and practical advice to user questions. Avoid overly long answers and focus on key points. Do not use markdown formatting.',
             'フォーム改善・メンタル強化',
             'Form improvement and mental strengthening',
-            '#3B82F6'
+            '#3B82F6',
+            ${DEFAULT_COACH_AVATAR}
           )
         `);
         console.log('✅ Seeded default coach');
@@ -230,10 +241,12 @@ async function runStartupMigrations() {
         // Check if coaches table is empty and seed if needed
         const coachCount = await db.execute(sql`SELECT COUNT(*) as count FROM coaches`);
         const rows = coachCount[0] as unknown as Array<{ count: number }>;
+        console.log(`ℹ️ coaches table exists with ${rows[0]?.count ?? 'unknown'} records`);
+
         if (rows[0]?.count === 0) {
           console.log('📦 Coaches table empty, seeding default coach...');
           await db.execute(sql`
-            INSERT INTO coaches (name, name_en, personality, personality_en, system_prompt, system_prompt_en, specialty, specialty_en, color)
+            INSERT INTO coaches (name, name_en, personality, personality_en, system_prompt, system_prompt_en, specialty, specialty_en, color, avatar_url)
             VALUES (
               'Kim Chung Tae',
               'Kim Chung Tae',
@@ -243,10 +256,24 @@ async function runStartupMigrations() {
               'You are an archery AI coach. Provide specific and practical advice to user questions. Avoid overly long answers and focus on key points. Do not use markdown formatting.',
               'フォーム改善・メンタル強化',
               'Form improvement and mental strengthening',
-              '#3B82F6'
+              '#3B82F6',
+              ${DEFAULT_COACH_AVATAR}
             )
           `);
           console.log('✅ Seeded default coach');
+        } else {
+          console.log('ℹ️ Coach data already exists - preserving user settings');
+          // Only update avatar_url if it's null (don't overwrite other fields!)
+          const coachData = await db.execute(sql`SELECT id, avatar_url, teaching_philosophy FROM coaches WHERE id = 1`);
+          const coachRows = coachData[0] as unknown as Array<{ id: number; avatar_url: string | null; teaching_philosophy: string | null }>;
+          if (coachRows[0]) {
+            console.log(`ℹ️ Coach 1: avatarUrl=${coachRows[0].avatar_url ? 'set' : 'null'}, teachingPhilosophy=${coachRows[0].teaching_philosophy ? 'set' : 'null'}`);
+            if (!coachRows[0].avatar_url) {
+              console.log('📦 Updating coach avatar (no other fields will be changed)...');
+              await db.execute(sql`UPDATE coaches SET avatar_url = ${DEFAULT_COACH_AVATAR} WHERE id = 1`);
+              console.log('✅ Updated coach avatar');
+            }
+          }
         }
       }
 
