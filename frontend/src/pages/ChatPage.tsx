@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Send, Sparkles, Trash2, Plus, Menu, X, MessageSquare, MoreVertical, Pencil, Check } from 'lucide-react';
+import { ArrowLeft, Send, Sparkles, Trash2, Plus, Menu, X, MessageSquare, Pencil, Check } from 'lucide-react';
 import { api } from '../lib/api';
 import type { Coach, ChatMessage, ChatSession } from '../types';
 
