@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { Trash2, Eye, X, Edit3 } from 'lucide-react';
 import { api } from '../lib/api';
 import type { ArcheryRound, ArcheryEnd, ArcheryScore } from '../types';
@@ -84,6 +85,7 @@ const WEATHER_OPTIONS = [
 
 export function ScoringPage() {
   const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [round, setRound] = useState<ArcheryRound | null>(null);
   const [currentEndIndex, setCurrentEndIndex] = useState(0);
   const [currentArrowIndex, setCurrentArrowIndex] = useState(0);
@@ -94,6 +96,7 @@ export function ScoringPage() {
 
   // New round modal state
   const [showNewRoundModal, setShowNewRoundModal] = useState(false);
+  const [autoStartHandled, setAutoStartHandled] = useState(false);
   const [selectedDistance, setSelectedDistance] = useState(DISTANCE_PRESETS[0]);
   const [selectedRoundType, setSelectedRoundType] = useState<'personal' | 'club' | 'competition'>('personal');
   const [competitionName, setCompetitionName] = useState('');
@@ -122,6 +125,32 @@ export function ScoringPage() {
   useEffect(() => {
     loadRounds();
   }, []);
+
+  // Handle autoStart parameter from URL
+  useEffect(() => {
+    const autoStart = searchParams.get('autoStart');
+    if (autoStart === 'true' && !autoStartHandled && !round) {
+      setAutoStartHandled(true);
+      // Pre-fill form values from URL params
+      const urlLocation = searchParams.get('location');
+      const urlWeather = searchParams.get('weather');
+      const urlCondition = searchParams.get('condition');
+      if (urlLocation) setLocation(urlLocation);
+      if (urlWeather) setSelectedWeather(urlWeather as typeof WEATHER_OPTIONS[number]['value']);
+      if (urlCondition) setSelectedCondition(urlCondition as typeof CONDITION_OPTIONS[number]['value']);
+      // Set default time to current time
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      setStartTime(`${hours}:${minutes}`);
+      // Open the new round modal
+      setShowNewRoundModal(true);
+      // Clear the autoStart param from URL
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('autoStart');
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, autoStartHandled, round, setSearchParams]);
 
   const loadRounds = async () => {
     try {

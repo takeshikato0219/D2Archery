@@ -350,6 +350,7 @@ export function ScoresPage() {
             onStartScoring={(location, weather, condition) => {
               const dateStr = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
               const params = new URLSearchParams();
+              params.set('autoStart', 'true');
               if (dateStr) params.set('date', dateStr);
               if (location) params.set('location', location);
               if (weather) params.set('weather', weather);
@@ -518,7 +519,7 @@ export function ScoresPage() {
 
               {/* Quick Add Scoring Button */}
               <Link
-                to={`/scoring?date=${selectedDateKey}`}
+                to={`/scoring?autoStart=true&date=${selectedDateKey}`}
                 className="card p-4 border-2 border-dashed border-gray-300 flex items-center justify-center gap-2 text-gray-500 hover:border-primary-400 hover:text-primary-600 transition-colors"
               >
                 <Target className="w-5 h-5" />
@@ -573,7 +574,7 @@ export function ScoresPage() {
               </p>
               {!searchQuery && (
                 <Link
-                  to="/scoring"
+                  to="/scoring?autoStart=true"
                   className="text-primary-600 text-sm mt-2 inline-block"
                 >
                   点取りを開始する →

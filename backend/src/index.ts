@@ -208,15 +208,192 @@ async function runStartupMigrations() {
           )
         `);
         console.log('✅ Created coaches table');
+
+        // Seed default coach
+        console.log('📦 Seeding default coach...');
+        await db.execute(sql`
+          INSERT INTO coaches (name, name_en, personality, personality_en, system_prompt, system_prompt_en, specialty, specialty_en, color)
+          VALUES (
+            'Kim Chung Tae',
+            'Kim Chung Tae',
+            '韓国のオリンピック金メダリスト。穏やかで励まし上手。技術的なアドバイスと精神面のサポートの両方を得意とする。',
+            'Korean Olympic gold medalist. Calm and encouraging. Skilled at both technical advice and mental support.',
+            'あなたはアーチェリーのAIコーチです。ユーザーの質問に対して、具体的で実践的なアドバイスを提供してください。長すぎる回答は避け、要点を絞って回答してください。マークダウン記法は使わないでください。',
+            'You are an archery AI coach. Provide specific and practical advice to user questions. Avoid overly long answers and focus on key points. Do not use markdown formatting.',
+            'フォーム改善・メンタル強化',
+            'Form improvement and mental strengthening',
+            '#3B82F6'
+          )
+        `);
+        console.log('✅ Seeded default coach');
+      } else {
+        // Check if coaches table is empty and seed if needed
+        const coachCount = await db.execute(sql`SELECT COUNT(*) as count FROM coaches`);
+        const rows = coachCount[0] as unknown as Array<{ count: number }>;
+        if (rows[0]?.count === 0) {
+          console.log('📦 Coaches table empty, seeding default coach...');
+          await db.execute(sql`
+            INSERT INTO coaches (name, name_en, personality, personality_en, system_prompt, system_prompt_en, specialty, specialty_en, color)
+            VALUES (
+              'Kim Chung Tae',
+              'Kim Chung Tae',
+              '韓国のオリンピック金メダリスト。穏やかで励まし上手。技術的なアドバイスと精神面のサポートの両方を得意とする。',
+              'Korean Olympic gold medalist. Calm and encouraging. Skilled at both technical advice and mental support.',
+              'あなたはアーチェリーのAIコーチです。ユーザーの質問に対して、具体的で実践的なアドバイスを提供してください。長すぎる回答は避け、要点を絞って回答してください。マークダウン記法は使わないでください。',
+              'You are an archery AI coach. Provide specific and practical advice to user questions. Avoid overly long answers and focus on key points. Do not use markdown formatting.',
+              'フォーム改善・メンタル強化',
+              'Form improvement and mental strengthening',
+              '#3B82F6'
+            )
+          `);
+          console.log('✅ Seeded default coach');
+        }
       }
 
-      // Update coach name from キム・チョンテ to Kim Chung Tae
-      try {
-        await db.update(coaches)
-          .set({ name: 'Kim Chung Tae' })
-          .where(eq(coaches.name, 'キム・チョンテ'));
-      } catch (e) {
-        // Ignore error if coaches table is empty
+      // Create score_logs table if it doesn't exist
+      if (!await tableExists(db, 'score_logs')) {
+        console.log('📦 Creating score_logs table...');
+        await db.execute(sql`
+          CREATE TABLE score_logs (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            user_id INT NOT NULL,
+            date DATE NOT NULL,
+            score INT NOT NULL,
+            max_score INT NOT NULL,
+            arrows_count INT NOT NULL,
+            distance INT NOT NULL,
+            memo TEXT,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX user_id_idx (user_id),
+            INDEX date_idx (date)
+          )
+        `);
+        console.log('✅ Created score_logs table');
+      }
+
+      // Create archery_rounds table if it doesn't exist
+      if (!await tableExists(db, 'archery_rounds')) {
+        console.log('📦 Creating archery_rounds table...');
+        await db.execute(sql`
+          CREATE TABLE archery_rounds (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            user_id INT NOT NULL,
+            date DATE NOT NULL,
+            distance INT NOT NULL,
+            distance_label VARCHAR(50),
+            arrows_per_end INT NOT NULL DEFAULT 6,
+            total_ends INT NOT NULL DEFAULT 12,
+            total_arrows INT NOT NULL DEFAULT 72,
+            round_type ENUM('personal', 'club', 'competition') DEFAULT 'personal',
+            competition_name VARCHAR(255),
+            location VARCHAR(255),
+            start_time VARCHAR(10),
+            weather ENUM('sunny', 'cloudy', 'rainy', 'snowy', 'windy', 'indoor'),
+            \`condition\` ENUM('excellent', 'good', 'normal', 'poor', 'bad'),
+            concerns TEXT,
+            memo TEXT,
+            total_score INT DEFAULT 0,
+            total_x INT DEFAULT 0,
+            total_10 INT DEFAULT 0,
+            status ENUM('in_progress', 'completed', 'cancelled') DEFAULT 'in_progress',
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX user_id_idx (user_id),
+            INDEX date_idx (date)
+          )
+        `);
+        console.log('✅ Created archery_rounds table');
+      }
+
+      // Create archery_ends table if it doesn't exist
+      if (!await tableExists(db, 'archery_ends')) {
+        console.log('📦 Creating archery_ends table...');
+        await db.execute(sql`
+          CREATE TABLE archery_ends (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            round_id INT NOT NULL,
+            end_number INT NOT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX round_id_idx (round_id)
+          )
+        `);
+        console.log('✅ Created archery_ends table');
+      }
+
+      // Create archery_scores table if it doesn't exist
+      if (!await tableExists(db, 'archery_scores')) {
+        console.log('📦 Creating archery_scores table...');
+        await db.execute(sql`
+          CREATE TABLE archery_scores (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            end_id INT NOT NULL,
+            arrow_number INT NOT NULL,
+            score VARCHAR(2) NOT NULL,
+            value INT NOT NULL,
+            x_position FLOAT,
+            y_position FLOAT,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX end_id_idx (end_id)
+          )
+        `);
+        console.log('✅ Created archery_scores table');
+      }
+
+      // Create chat_sessions table if it doesn't exist
+      if (!await tableExists(db, 'chat_sessions')) {
+        console.log('📦 Creating chat_sessions table...');
+        await db.execute(sql`
+          CREATE TABLE chat_sessions (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            user_id INT NOT NULL,
+            coach_id INT NOT NULL,
+            title VARCHAR(255),
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX user_id_idx (user_id),
+            INDEX coach_id_idx (coach_id)
+          )
+        `);
+        console.log('✅ Created chat_sessions table');
+      }
+
+      // Create chat_messages table if it doesn't exist
+      if (!await tableExists(db, 'chat_messages')) {
+        console.log('📦 Creating chat_messages table...');
+        await db.execute(sql`
+          CREATE TABLE chat_messages (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            session_id INT NOT NULL,
+            role ENUM('user', 'assistant') NOT NULL,
+            content TEXT NOT NULL,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX session_id_idx (session_id)
+          )
+        `);
+        console.log('✅ Created chat_messages table');
+      }
+
+      // Create practice_memos table if it doesn't exist
+      if (!await tableExists(db, 'practice_memos')) {
+        console.log('📦 Creating practice_memos table...');
+        await db.execute(sql`
+          CREATE TABLE practice_memos (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            user_id INT NOT NULL,
+            date DATE NOT NULL,
+            content TEXT NOT NULL,
+            \`condition\` ENUM('excellent', 'good', 'normal', 'poor', 'bad'),
+            weather ENUM('sunny', 'cloudy', 'rainy', 'snowy', 'windy', 'indoor'),
+            location VARCHAR(255),
+            media JSON,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX user_id_idx (user_id),
+            INDEX date_idx (date)
+          )
+        `);
+        console.log('✅ Created practice_memos table');
       }
 
       // Set admin user (by email)
