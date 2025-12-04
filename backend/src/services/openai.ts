@@ -429,14 +429,24 @@ Long responses are PROHIBITED. Be brief and punchy.`;
     });
   }
 
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: apiMessages,
-    temperature: 0.8,
-    max_tokens: 300, // 短い回答に制限
-  });
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: apiMessages,
+      temperature: 0.8,
+      max_tokens: 300, // 短い回答に制限
+    });
 
-  return response.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
+    return response.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
+  } catch (error) {
+    console.error('OpenAI API error:', error);
+    if (error instanceof Error) {
+      console.error('Error details:', error.message);
+    }
+    return language === 'ja'
+      ? `申し訳ありません。現在AIサービスに接続できません。しばらくしてからもう一度お試しください。`
+      : `Sorry, I cannot connect to the AI service right now. Please try again later.`;
+  }
 }
 
 export async function generateScoreAdvice(
