@@ -71,6 +71,27 @@ class ApiClient {
     );
   }
 
+  // Email register
+  async emailRegister(data: {
+    email: string;
+    password: string;
+    name: string;
+    language?: string;
+  }) {
+    return this.request<{ token: string; user: import('../types').User }>(
+      '/api/auth/register',
+      { method: 'POST', body: JSON.stringify(data) }
+    );
+  }
+
+  // Email login
+  async emailLogin(data: { email: string; password: string }) {
+    return this.request<{ token: string; user: import('../types').User }>(
+      '/api/auth/login',
+      { method: 'POST', body: JSON.stringify(data) }
+    );
+  }
+
   async getMe() {
     return this.request<import('../types').User>('/api/auth/me');
   }
@@ -908,6 +929,56 @@ class ApiClient {
     return this.request<import('../types').TeamWeeklyRanking[]>(
       `/api/teams/${teamId}/ranking/weekly`
     );
+  }
+
+  // Admin APIs
+  async adminGetUsers() {
+    return this.request<import('../types').AdminUser[]>('/api/admin/users');
+  }
+
+  async adminGetUser(id: number) {
+    return this.request<import('../types').AdminUser>(`/api/admin/users/${id}`);
+  }
+
+  async adminUpdateUser(id: number, data: { isAdmin?: boolean }) {
+    return this.request<{ success: boolean }>(`/api/admin/users/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminGetUserChats(userId: number) {
+    return this.request<import('../types').AdminChatSession[]>(
+      `/api/admin/users/${userId}/chats`
+    );
+  }
+
+  async adminGetAllChats(coachId?: number) {
+    const query = coachId ? `?coachId=${coachId}` : '';
+    return this.request<import('../types').AdminChatSession[]>(
+      `/api/admin/chats${query}`
+    );
+  }
+
+  async adminGetChatSession(sessionId: number) {
+    return this.request<{
+      session: import('../types').AdminChatSession;
+      messages: import('../types').AdminChatMessage[];
+    }>(`/api/admin/chats/${sessionId}`);
+  }
+
+  async adminGetCoaches() {
+    return this.request<{ id: number; name: string; nameEn: string; specialty: string }[]>(
+      '/api/admin/coaches'
+    );
+  }
+
+  async adminGetStats() {
+    return this.request<{
+      totalUsers: number;
+      totalSessions: number;
+      totalMessages: number;
+    }>('/api/admin/stats');
   }
 }
 

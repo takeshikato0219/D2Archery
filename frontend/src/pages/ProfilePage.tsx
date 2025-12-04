@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { LogOut, Globe, User, ChevronRight, Target, Settings, Edit2, X, Trophy } from 'lucide-react';
+import { LogOut, Globe, User, ChevronRight, Target, Settings, Edit2, X, Trophy, Shield } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { BEST_SCORE_DISTANCES, type BestScores } from '../types';
 
@@ -14,7 +14,7 @@ const GENDER_OPTIONS = [
 
 export function ProfilePage() {
   const { t, i18n } = useTranslation();
-  const { user, logout, updateUser } = useAuth();
+  const { user, logout, updateUser, isAdmin } = useAuth();
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -251,6 +251,27 @@ export function ProfilePage() {
             <ChevronRight className="w-5 h-5 text-gray-400" />
           </div>
         </Link>
+
+        {/* Admin: Dashboard (only for admins) */}
+        {isAdmin && (
+          <Link
+            to="/admin"
+            className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center">
+              <Shield className="w-5 h-5 text-gray-400 mr-3" />
+              <span className="text-gray-900">
+                {isJa ? '管理者ダッシュボード' : 'Admin Dashboard'}
+              </span>
+            </div>
+            <div className="flex items-center">
+              <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded mr-2">
+                Admin Only
+              </span>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            </div>
+          </Link>
+        )}
 
         {/* Logout */}
         <button

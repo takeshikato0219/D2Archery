@@ -12,6 +12,7 @@ import { EquipmentPage } from './pages/EquipmentPage';
 import { RankingPage } from './pages/RankingPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { AdminTeachingPage } from './pages/AdminTeachingPage';
+import { AdminPage } from './pages/AdminPage';
 import { ScoringPage } from './pages/ScoringPage';
 import { TeamPage } from './pages/TeamPage';
 import './lib/i18n';
@@ -91,6 +92,7 @@ function AppRoutes() {
         <Route path="/team" element={<TeamPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/admin/teaching" element={<AdminTeachingPage />} />
+        <Route path="/admin" element={<AdminPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

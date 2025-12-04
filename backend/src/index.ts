@@ -18,6 +18,7 @@ import teachingRoutes from './routes/teaching.js';
 import archeryRoutes from './routes/archery.js';
 import memosRoutes from './routes/memos.js';
 import teamsRoutes from './routes/teams.js';
+import adminRoutes from './routes/admin.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -48,6 +49,7 @@ app.use('/api/teaching', teachingRoutes);
 app.use('/api/archery', archeryRoutes);
 app.use('/api/memos', memosRoutes);
 app.use('/api/teams', teamsRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Serve static files from frontend build
 const frontendDist = path.join(__dirname, '../../frontend/dist');
@@ -78,7 +80,41 @@ async function runStartupMigrations() {
     // Only run in production mode
     if (process.env.NODE_ENV === 'production' || process.env.DB_HOST) {
       const { db, coaches } = await import('./db/index.js');
-      const { eq } = await import('drizzle-orm');
+      const { eq, sql } = await import('drizzle-orm');
+
+      // Add new auth columns if they don't exist
+      // password column for email authentication
+      try {
+        await db.execute(sql`ALTER TABLE users ADD COLUMN password VARCHAR(255)`);
+        console.log('✅ Added password column');
+      } catch (e: unknown) {
+        const err = e as { code?: string };
+        if (err.code !== 'ER_DUP_FIELDNAME') {
+          console.log('ℹ️ password column already exists or error:', err.code);
+        }
+      }
+
+      // is_admin column for admin functionality
+      try {
+        await db.execute(sql`ALTER TABLE users ADD COLUMN is_admin INT NOT NULL DEFAULT 0`);
+        console.log('✅ Added is_admin column');
+      } catch (e: unknown) {
+        const err = e as { code?: string };
+        if (err.code !== 'ER_DUP_FIELDNAME') {
+          console.log('ℹ️ is_admin column already exists or error:', err.code);
+        }
+      }
+
+      // auth_provider column to track login method
+      try {
+        await db.execute(sql`ALTER TABLE users ADD COLUMN auth_provider VARCHAR(20) NOT NULL DEFAULT 'google'`);
+        console.log('✅ Added auth_provider column');
+      } catch (e: unknown) {
+        const err = e as { code?: string };
+        if (err.code !== 'ER_DUP_FIELDNAME') {
+          console.log('ℹ️ auth_provider column already exists or error:', err.code);
+        }
+      }
 
       // Update coach name from キム・チョンテ to Kim Chung Tae
       await db.update(coaches)

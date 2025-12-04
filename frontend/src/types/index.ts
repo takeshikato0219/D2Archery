@@ -363,3 +363,42 @@ export interface TeamPostComment {
   user?: User;
   createdAt: string;
 }
+
+// Admin Types
+export interface AdminUser {
+  id: number;
+  email: string;
+  name: string;
+  avatarUrl?: string;
+  isAdmin: number;
+  authProvider: 'google' | 'email';
+  language: 'ja' | 'en';
+  gender?: 'male' | 'female' | 'other';
+  affiliation?: string;
+  nickname?: string;
+  bestScores?: string;
+  mastersRating?: number;
+  mastersRank?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminChatSession {
+  id: number;
+  title: string;
+  userId: number;
+  userName?: string;
+  userEmail?: string;
+  coachId: number;
+  coachName?: string;
+  messageCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminChatMessage {
+  id: number;
+  role: 'user' | 'assistant';
+  content: string;
+  createdAt: string;
+}

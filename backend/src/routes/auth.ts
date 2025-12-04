@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 import type { AuthRequest } from '../middleware/auth.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { demoStore, isDemoMode } from '../db/demo-store.js';
 
 const router = Router();
+const SALT_ROUNDS = 10;
 
 const SESSION_SECRET = process.env.SESSION_SECRET || 'demo-secret-key-change-in-production';
 
@@ -192,6 +194,152 @@ router.post('/google', async (req, res) => {
   } catch (error) {
     console.error('Auth error:', error);
     res.status(500).json({ error: 'Authentication failed' });
+  }
+});
+
+// Email registration
+router.post('/register', async (req, res) => {
+  try {
+    const { email, password, name, language = 'ja' } = req.body;
+
+    if (!email || !password || !name) {
+      return res.status(400).json({ error: 'メールアドレス、パスワード、名前は必須です' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'パスワードは6文字以上必要です' });
+    }
+
+    if (isDemoMode) {
+      return res.status(403).json({ error: 'デモモードではメール登録は利用できません' });
+    }
+
+    const { db, users } = await import('../db/index.js');
+    const { eq } = await import('drizzle-orm');
+
+    // Check if email already exists
+    const existingUser = await db.query.users.findFirst({
+      where: eq(users.email, email),
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ error: 'このメールアドレスは既に登録されています' });
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+    // Create user
+    const result = await db.insert(users).values({
+      email,
+      password: hashedPassword,
+      name,
+      language: language as 'ja' | 'en',
+      authProvider: 'email',
+      isAdmin: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, Number(result[0].insertId)),
+    });
+
+    if (!user) {
+      return res.status(500).json({ error: 'ユーザー作成に失敗しました' });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        avatarUrl: user.avatarUrl,
+        language: user.language,
+      },
+      SESSION_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        avatarUrl: user.avatarUrl,
+        language: user.language,
+      },
+    });
+  } catch (error) {
+    console.error('Register error:', error);
+    res.status(500).json({ error: '登録に失敗しました' });
+  }
+});
+
+// Email login
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'メールアドレスとパスワードは必須です' });
+    }
+
+    if (isDemoMode) {
+      return res.status(403).json({ error: 'デモモードではメールログインは利用できません' });
+    }
+
+    const { db, users } = await import('../db/index.js');
+    const { eq } = await import('drizzle-orm');
+
+    // Find user by email
+    const user = await db.query.users.findFirst({
+      where: eq(users.email, email),
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'メールアドレスまたはパスワードが正しくありません' });
+    }
+
+    // Check if user registered with email (has password)
+    if (!user.password) {
+      return res.status(401).json({ error: 'このアカウントはGoogleでログインしてください' });
+    }
+
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'メールアドレスまたはパスワードが正しくありません' });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        avatarUrl: user.avatarUrl,
+        language: user.language,
+      },
+      SESSION_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        avatarUrl: user.avatarUrl,
+        language: user.language,
+      },
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'ログインに失敗しました' });
   }
 });
 

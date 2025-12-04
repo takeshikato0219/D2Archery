@@ -8,6 +8,9 @@ export const users = mysqlTable('users', {
   name: varchar('name', { length: 255 }).notNull(),
   avatarUrl: varchar('avatar_url', { length: 500 }),
   googleId: varchar('google_id', { length: 255 }).unique(),
+  password: varchar('password', { length: 255 }), // ハッシュ化されたパスワード（メール認証用）
+  isAdmin: int('is_admin').default(0).notNull(), // 管理者フラグ (0: 通常, 1: 管理者)
+  authProvider: mysqlEnum('auth_provider', ['google', 'email']).default('google').notNull(), // 認証方式
   language: mysqlEnum('language', ['ja', 'en']).default('ja').notNull(),
   gender: mysqlEnum('gender', ['male', 'female', 'other']), // 性別（ランキングハンデ用）
   affiliation: varchar('affiliation', { length: 255 }), // 所属（大学名、クラブ名など）
