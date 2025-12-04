@@ -415,12 +415,20 @@ export function HomePage() {
                   to={`/coaches/${coach.id}`}
                   className="card p-4 flex items-start hover:shadow-soft transition-shadow block"
                 >
-                  <div
-                    className="w-14 h-14 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xl font-bold mr-4"
-                    style={{ backgroundColor: coach.color }}
-                  >
-                    {coachName.charAt(0)}
-                  </div>
+                  {coach.avatarUrl ? (
+                    <img
+                      src={coach.avatarUrl}
+                      alt={coachName}
+                      className="w-14 h-14 rounded-full flex-shrink-0 object-cover mr-4"
+                    />
+                  ) : (
+                    <div
+                      className="w-14 h-14 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xl font-bold mr-4"
+                      style={{ backgroundColor: coach.color }}
+                    >
+                      {coachName.charAt(0)}
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-gray-900">{coachName}</h3>
                     <p className="text-sm text-primary-600 mb-1">
