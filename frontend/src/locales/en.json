@@ -1,0 +1,118 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "send": "Send",
+    "back": "Back",
+    "close": "Close",
+    "confirm": "Confirm",
+    "all": "All"
+  },
+  "nav": {
+    "home": "Home",
+    "coaches": "Coaches",
+    "scores": "Scores",
+    "equipment": "Equipment",
+    "ranking": "Ranking",
+    "profile": "Profile"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "loginWithGoogle": "Login with Google",
+    "welcomeBack": "Welcome back"
+  },
+  "home": {
+    "welcome": "Welcome",
+    "recentScore": "Recent Score",
+    "totalSessions": "Sessions",
+    "totalArrows": "Total Arrows",
+    "averageScore": "Average",
+    "highScore": "High Score",
+    "trend": {
+      "improving": "Improving",
+      "declining": "Declining",
+      "stable": "Stable"
+    },
+    "noScores": "No scores yet",
+    "startRecording": "Start recording your practice"
+  },
+  "coaches": {
+    "title": "AI Coaches",
+    "selectCoach": "Select a coach",
+    "specialty": "Specialty",
+    "startChat": "Start Chat",
+    "chatWith": "Chat with {{name}}"
+  },
+  "chat": {
+    "placeholder": "Type your question...",
+    "sending": "Sending...",
+    "getAdvice": "Get advice based on your scores",
+    "clearHistory": "Clear History",
+    "noMessages": "No messages yet. Ask me anything!"
+  },
+  "scores": {
+    "title": "Score Log",
+    "addScore": "Add Score",
+    "date": "Date",
+    "score": "Score",
+    "maxScore": "Max Score",
+    "arrows": "Arrows",
+    "distance": "Distance",
+    "memo": "Notes",
+    "noScores": "No scores recorded yet",
+    "graph": "Graph",
+    "list": "List",
+    "period": {
+      "week": "1 Week",
+      "month": "1 Month",
+      "threeMonths": "3 Months",
+      "year": "1 Year"
+    }
+  },
+  "equipment": {
+    "title": "Recommended Equipment",
+    "categories": {
+      "bow": "Bow (Riser)",
+      "arrow": "Arrows",
+      "sight": "Sight",
+      "stabilizer": "Stabilizer",
+      "rest": "Rest",
+      "tab": "Tab",
+      "other": "Other"
+    },
+    "levels": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced",
+      "all": "All Levels"
+    },
+    "viewDetails": "View Details",
+    "buyNow": "Buy Now"
+  },
+  "ranking": {
+    "title": "Rankings",
+    "scoreRanking": "Score Ranking",
+    "practiceRanking": "Practice Ranking",
+    "yourRank": "Your Rank",
+    "rank": "#{{rank}}",
+    "arrows": "arrows",
+    "period": {
+      "week": "Weekly",
+      "month": "Monthly"
+    },
+    "world": "World",
+    "japan": "Japan"
+  },
+  "profile": {
+    "title": "Profile",
+    "settings": "Settings",
+    "language": "Language",
+    "japanese": "日本語",
+    "english": "English"
+  }
+}

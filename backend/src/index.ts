@@ -1,0 +1,80 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Load environment variables
+dotenv.config();
+
+// Import routes
+import authRoutes from './routes/auth.js';
+import scoresRoutes from './routes/scores.js';
+import coachesRoutes from './routes/coaches.js';
+import chatRoutes from './routes/chat.js';
+import equipmentRoutes from './routes/equipment.js';
+import rankingsRoutes from './routes/rankings.js';
+import teachingRoutes from './routes/teaching.js';
+import archeryRoutes from './routes/archery.js';
+import memosRoutes from './routes/memos.js';
+import teamsRoutes from './routes/teams.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// Middleware
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true,
+}));
+app.use(express.json());
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/scores', scoresRoutes);
+app.use('/api/coaches', coachesRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/equipment', equipmentRoutes);
+app.use('/api/rankings', rankingsRoutes);
+app.use('/api/teaching', teachingRoutes);
+app.use('/api/archery', archeryRoutes);
+app.use('/api/memos', memosRoutes);
+app.use('/api/teams', teamsRoutes);
+
+// Serve static files from frontend build
+const frontendDist = path.join(__dirname, '../../frontend/dist');
+app.use(express.static(frontendDist));
+
+// Serve uploaded files
+const uploadsDir = path.join(__dirname, '../uploads');
+app.use('/uploads', express.static(uploadsDir));
+
+// SPA fallback - serve index.html for all non-API routes
+app.get('*', (req, res, next) => {
+  // Skip API routes
+  if (req.path.startsWith('/api/') || req.path === '/health') {
+    return next();
+  }
+  res.sendFile(path.join(frontendDist, 'index.html'));
+});
+
+// Error handler
+app.use((err: Error, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Server error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🏹 D2 Archery running on http://localhost:${PORT}`);
+});
+
+export default app;

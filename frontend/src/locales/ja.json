@@ -1,0 +1,138 @@
+{
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラーが発生しました",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "send": "送信",
+    "back": "戻る",
+    "close": "閉じる",
+    "confirm": "確認",
+    "all": "すべて"
+  },
+  "nav": {
+    "home": "ホーム",
+    "coaches": "コーチ",
+    "scores": "練習帳",
+    "equipment": "道具",
+    "ranking": "ランキング",
+    "profile": "プロフィール"
+  },
+  "auth": {
+    "login": "ログイン",
+    "logout": "ログアウト",
+    "loginWithGoogle": "Googleでログイン",
+    "welcomeBack": "おかえりなさい"
+  },
+  "home": {
+    "welcome": "ようこそ",
+    "recentScore": "最新スコア",
+    "totalSessions": "練習回数",
+    "totalArrows": "総射数",
+    "averageScore": "平均スコア",
+    "highScore": "最高スコア",
+    "trend": {
+      "improving": "上昇中",
+      "declining": "下降中",
+      "stable": "安定"
+    },
+    "noScores": "今日の練習",
+    "startRecording": "さあ、練習を始めましょう！"
+  },
+  "coaches": {
+    "title": "AIコーチ",
+    "selectCoach": "コーチを選んでください",
+    "specialty": "専門",
+    "startChat": "相談する",
+    "chatWith": "{{name}}と相談"
+  },
+  "chat": {
+    "placeholder": "悩みや質問を入力...",
+    "sending": "送信中...",
+    "getAdvice": "スコアを分析してアドバイスをもらう",
+    "clearHistory": "履歴をクリア",
+    "noMessages": "まだメッセージがありません。何でも聞いてください！"
+  },
+  "scores": {
+    "title": "練習帳",
+    "addScore": "練習を始める",
+    "addPractice": "今日の練習を追加",
+    "date": "日付",
+    "score": "点数",
+    "maxScore": "満点",
+    "arrows": "本数",
+    "distance": "距離",
+    "memo": "メモ",
+    "location": "場所",
+    "startTime": "開始時間",
+    "endTime": "終了時間",
+    "scoringRounds": "点取り回数",
+    "totalArrows": "総射数",
+    "noScores": "今日の練習",
+    "graph": "グラフ",
+    "list": "一覧",
+    "calendar": "カレンダー",
+    "period": {
+      "week": "1週間",
+      "month": "1ヶ月",
+      "threeMonths": "3ヶ月",
+      "year": "1年"
+    },
+    "weather": {
+      "sunny": "晴れ",
+      "cloudy": "曇り",
+      "rainy": "雨",
+      "indoor": "室内"
+    },
+    "condition": {
+      "excellent": "絶好調",
+      "good": "好調",
+      "normal": "普通",
+      "poor": "不調",
+      "bad": "絶不調"
+    }
+  },
+  "equipment": {
+    "title": "おすすめ道具",
+    "categories": {
+      "bow": "弓（ライザー）",
+      "arrow": "矢",
+      "sight": "サイト",
+      "stabilizer": "スタビライザー",
+      "rest": "レスト",
+      "tab": "タブ",
+      "other": "その他"
+    },
+    "levels": {
+      "beginner": "初心者向け",
+      "intermediate": "中級者向け",
+      "advanced": "上級者向け",
+      "all": "全レベル"
+    },
+    "viewDetails": "詳細を見る",
+    "buyNow": "購入する"
+  },
+  "ranking": {
+    "title": "ランキング",
+    "scoreRanking": "スコアランキング",
+    "practiceRanking": "練習本数ランキング",
+    "yourRank": "あなたの順位",
+    "rank": "{{rank}}位",
+    "arrows": "本",
+    "period": {
+      "week": "週間",
+      "month": "月間"
+    },
+    "world": "世界",
+    "japan": "日本"
+  },
+  "profile": {
+    "title": "プロフィール",
+    "settings": "設定",
+    "language": "言語",
+    "japanese": "日本語",
+    "english": "English"
+  }
+}
