@@ -364,14 +364,28 @@ async function runStartupMigrations() {
         await db.execute(sql`
           CREATE TABLE chat_messages (
             id INT PRIMARY KEY AUTO_INCREMENT,
-            session_id INT NOT NULL,
+            session_id INT,
+            user_id INT NOT NULL,
+            coach_id INT NOT NULL,
             role ENUM('user', 'assistant') NOT NULL,
             content TEXT NOT NULL,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            INDEX session_id_idx (session_id)
+            INDEX session_id_idx (session_id),
+            INDEX user_id_idx (user_id),
+            INDEX coach_id_idx (coach_id)
           )
         `);
         console.log('✅ Created chat_messages table');
+      } else {
+        // Add missing columns if they don't exist
+        if (!await columnExists(db, 'chat_messages', 'user_id')) {
+          await db.execute(sql`ALTER TABLE chat_messages ADD COLUMN user_id INT NOT NULL DEFAULT 0`);
+          console.log('✅ Added user_id column to chat_messages');
+        }
+        if (!await columnExists(db, 'chat_messages', 'coach_id')) {
+          await db.execute(sql`ALTER TABLE chat_messages ADD COLUMN coach_id INT NOT NULL DEFAULT 0`);
+          console.log('✅ Added coach_id column to chat_messages');
+        }
       }
 
       // Create practice_memos table if it doesn't exist
