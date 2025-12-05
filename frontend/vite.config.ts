@@ -6,11 +6,11 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:6100',
+        target: 'http://localhost:1200',
         changeOrigin: true,
       },
       '/uploads': {
-        target: 'http://localhost:6100',
+        target: 'http://localhost:1200',
         changeOrigin: true,
       },
     },
